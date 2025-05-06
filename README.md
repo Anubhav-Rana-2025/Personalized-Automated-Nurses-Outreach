@@ -47,17 +47,15 @@ Which is for now written into a BigQuery table.
 ---
 ### CUSTOMER JOURNEY TRACKING AND LEAD PRIORITIZATION
 
-Implement a UTM embedded Link in the email messages with an image so that whenever the user clicks the event is fired and received by a Web analytics tool  
-When the user lands on the website we can resolve his pseudo id(If GA4) with the email and track his movements across the website and assess amount to spend basis his lead propensity  
-Use the pseudo id and lead propensity to upload the audience and re-target them through Google Ads with appropriate budgets
+Implement a UTM embedded Link in the email messages with an image so that whenever the user clicks the event is fired and received by a Web analytics tool.When the user lands on the website we can enable customer journey mapping by resolving his pseudo id(If GA4) with the email using the previous event details and track his movements across the website and assess amount to spend basis his lead propensity.  
+Use the pseudo id and lead propensity to upload the audience and re-target them through Google Ads with appropriate budgets to optimize marketing spends
 
 ---
 
 ### RESPONSE MANAGEMENT
 
-Automated handling through Gemini of first response basis the customer reply that will also tag a human  
-If any information requested  
-Enable a information retrieval system that mines information from FAQ collaterals Borderplus has and works in tandem with the response generator to provide first response on the question  
+Automated handling through Gemini of first response basis the customer reply that will also tag a human team member 
+If any information requested  by customer : Enable a information retrieval system that mines information from FAQ collaterals Borderplus has and works in tandem with the response generator to provide first response on the question  
 
 ---
 
