@@ -18,25 +18,25 @@ The front was written in HTML and Javascript and hosted on cloud functions using
 
 ---
 
-### CSV Upload : Folder Link
+### CSV Upload :
 
 This Cloud  function takes in the front request when the upload button is hit handles the file and sends it back for it to be displayed.
 
 ---
 
-### Content Generation : Folder Link
+### Content Generation : 
 
 This Cloud function is invoked when the user hits the generate message button. The function takes in the selected rows and uses the defined prompt and gemini api key sourced from secret manager to call the Gemini API for each row and appends the Messages and sends it back to the front end
 
 ---
 
-### Req-Reciever (Mock Gmail API) : Folder Link
+### Req-Reciever (Mock Gmail API) : 
 
 Another Cloud function that takes the call when user hits send the email button on UI. The function then writes the whole data to a bigquery table with statuses and timestamp for logging and then returns the statuses and timestamp to front end as well.
 
 ---
 
-### Follow Up Generator (Driven By Cron Job from Cloud Scheduler) : Folder Link
+### Follow Up Generator (Driven By Cron Job from Cloud Scheduler) :
 
 This function checks the table created by the scheduled query that updates reply status for 24hr window. It sources the recipients that did not reply and then calls gemini to draft a follow up message.  
 Which is for now written into a BigQuery table.
