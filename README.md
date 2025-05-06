@@ -6,13 +6,7 @@ Enabling personalized automated emails with Gemini Driven Content.
 
 ## Tech Stack
 
-Python  
-GCP Cloud Run Functions  
-BigQuery  
-Gemini  
-HTML  
-CSS  
-JavaScript  
+Python, GCP Cloud Run Functions, BigQuery, Gemini, HTML, CSS, JavaScript  
 
 ---
 
@@ -49,8 +43,8 @@ Which is for now written into a BigQuery table.
 
 ---
 
-## What I would have done next
-
+## WHAT WOULD I HAVE DONE NEXT
+---
 ### CUSTOMER JOURNEY TRACKING AND LEAD PRIORITIZATION
 
 Implement a UTM embedded Link in the email messages with an image so that whenever the user clicks the event is fired and received by a Web analytics tool  
