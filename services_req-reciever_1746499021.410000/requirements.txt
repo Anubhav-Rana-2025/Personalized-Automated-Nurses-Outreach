@@ -1,0 +1,6 @@
+functions-framework==3.*
+pyarrow
+flask
+google-cloud-bigquery
+pandas
+pandas-gbq
