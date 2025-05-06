@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Nurse Message Generator</title>
+  <link rel="stylesheet" href="style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
+  <style>
+    table td {
+      word-wrap: break-word;
+      white-space: normal;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Nurse Message Generator</h1>
+
+    <!-- File Upload -->
+    <div>
+      <input type="file" id="csvFile" accept=".csv"/>
+      <button onclick="handleUpload()">Upload</button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters">
+      <label>Min Age:
+        <input type="number" id="minAge" min="0" />
+      </label>
+      <label>Max Age:
+        <input type="number" id="maxAge" min="0" />
+      </label>
+      <label>City:
+        <select id="cityFilter">
+          <option value="">All</option>
+        </select>
+      </label>
+      <button onclick="applyFilters()">Apply Filters</button>
+    </div>
+
+    <!-- Data Table -->
+    <div id="tableContainer"></div>
+
+    <!-- Generate Messages -->
+    <div style="margin-top: 1.5rem;">
+      <button onclick="generateMessages()">Generate Personalized Messages</button>
+    </div>
+
+    <!-- Results -->
+    <h2 style="margin-top: 2rem;">Generated Messages</h2>
+    <div id="resultContainer"></div>
+
+    <!-- Action Buttons -->
+    <div style="margin-top: 1rem;" class="actions">
+      <button onclick="SendEmail()">Send Email</button>
+    </div>
+
+    <script>
+      let csvData = [];
+      let headers = [];
+      let generatedMessageData = [];
+      let generatedMessageHeaders = [];
+
+      async function handleUpload() {
+        const fileInput = document.getElementById('csvFile');
+        const file = fileInput.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('https://csv-upload-305924307973.us-central1.run.app', {
+          method: 'POST',
+          body: formData
+        });
+
+        const json = await response.json();
+        headers = json.headers;
+        csvData = json.rows;
+
+        populateCityFilter(csvData);
+        renderTable(csvData);
+      }
+
+      function populateCityFilter(data) {
+        const cityIndex = headers.findIndex(h => h.toLowerCase() === 'city');
+        if (cityIndex === -1) return;
+
+        const cities = [...new Set(data.map(row => row[cityIndex]))];
+        const select = document.getElementById("cityFilter");
+        select.innerHTML = '<option value="">All</option>';
+        cities.forEach(city => {
+          const option = document.createElement("option");
+          option.value = city;
+          option.textContent = city;
+          select.appendChild(option);
+        });
+      }
+
+      function applyFilters() {
+        const minAge = parseInt(document.getElementById('minAge').value || 0);
+        const maxAge = parseInt(document.getElementById('maxAge').value || Infinity);
+        const city = document.getElementById('cityFilter').value;
+
+        const ageIndex = headers.findIndex(h => h.toLowerCase() === 'age');
+        const cityIndex = headers.findIndex(h => h.toLowerCase() === 'city');
+
+        const filtered = csvData.filter(row => {
+          const age = parseInt(row[ageIndex]);
+          const cityVal = row[cityIndex];
+          return (!isNaN(age) && age >= minAge && age <= maxAge) &&
+                 (!city || cityVal === city);
+        });
+
+        renderTable(filtered);
+      }
+
+      function renderTable(data) {
+        const tableHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th><input type="checkbox" onclick="toggleAll(this)"></th>
+                ${headers.map(h => `<th>${h}</th>`).join('')}
+              </tr>
+            </thead>
+            <tbody>
+              ${data.map((row, i) => `
+                <tr>
+                  <td><input type="checkbox" class="row-check" data-index="${csvData.indexOf(row)}"></td>
+                  ${row.map(col => `<td>${col}</td>`).join('')}
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        document.getElementById("tableContainer").innerHTML = tableHTML;
+      }
+
+      function toggleAll(box) {
+        document.querySelectorAll('.row-check').forEach(cb => cb.checked = box.checked);
+      }
+
+      async function generateMessages() {
+        const selected = [];
+        document.querySelectorAll('.row-check:checked').forEach(cb => {
+          const i = cb.getAttribute('data-index');
+          selected.push(csvData[i]);
+        });
+
+        if (selected.length === 0) {
+          alert("Please select at least one row.");
+          return;
+        }
+
+        const response = await fetch('https://content-generation-305924307973.us-central1.run.app', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ headers, rows: selected })
+        });
+
+        const csvText = await response.text();
+        const parsed = Papa.parse(csvText.trim(), { skipEmptyLines: true });
+        const rows = parsed.data;
+        generatedMessageHeaders = rows[0];
+        generatedMessageData = rows.slice(1);
+
+        renderGeneratedTable(generatedMessageHeaders, generatedMessageData);
+      }
+
+      function renderGeneratedTable(headers, data) {
+        const tableHTML = `
+          <table>
+            <thead>
+              <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+            </thead>
+            <tbody>
+              ${data.map(row => `
+                <tr>${row.map(col => `<td>${col}</td>`).join('')}</tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+        document.getElementById("resultContainer").innerHTML = tableHTML;
+      }
+
+      async function SendEmail() {
+        if (!generatedMessageHeaders.length || !generatedMessageData.length) {
+          alert("No generated messages to send. Please run message generation first.");
+          return;
+        }
+
+        try {
+          const response = await fetch('https://req-reciever-305924307973.us-west1.run.app', { // Replace with actual URL
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              headers: generatedMessageHeaders,
+              rows: generatedMessageData
+            })
+          });
+
+          if (!response.ok) throw new Error("Failed to mark status");
+
+          const result = await response.json();
+          generatedMessageHeaders = result.headers;
+          generatedMessageData = result.rows;
+
+          renderGeneratedTable(generatedMessageHeaders, generatedMessageData);
+          alert("Email sent and statuses updated.");
+        } catch (error) {
+          console.error(error);
+          alert("Failed to send email or update statuses.");
+        }
+      }
+    </script>
+  </div>
+</body>
+</html>
